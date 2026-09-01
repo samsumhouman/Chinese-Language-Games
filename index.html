@@ -11,6 +11,7 @@
             --card-bg: #ffffff;
             --text: #1e293b;
             --subtext: #64748b;
+            --badge-bg: #fee2e2;
         }
 
         body {
@@ -27,7 +28,7 @@
 
         header {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 2.5rem;
         }
 
         h1 {
@@ -47,12 +48,12 @@
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
             width: 100%;
-            max-width: 960px;
+            max-width: 1100px;
         }
 
         .game-card {
             background: var(--card-bg);
-            border-radius: 12px;
+            border-radius: 14px;
             padding: 1.5rem;
             text-decoration: none;
             color: inherit;
@@ -67,12 +68,13 @@
         .game-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-color: #fca5a5;
         }
 
         .game-card h2 {
             margin: 0 0 0.5rem 0;
             color: var(--primary);
-            font-size: 1.3rem;
+            font-size: 1.25rem;
         }
 
         .game-card p {
@@ -83,7 +85,7 @@
 
         .badge {
             align-self: flex-start;
-            background: #fee2e2;
+            background: var(--badge-bg);
             color: var(--primary);
             font-size: 0.75rem;
             font-weight: 700;
@@ -98,72 +100,71 @@
 
     <header>
         <h1>🇨🇳 Chinese Language Games</h1>
-        <p>Select a learning game to get started</p>
+        <p>Select a game to practice your Pinyin, Characters, and Vocabulary</p>
     </header>
 
     <main class="game-grid">
         <!-- Game 1 -->
-        <a href="https://samsumhouman.github.io/Chinese-Language-Games/games/game1/index.html" class="game-card">
+        <a href="games/game1/index.html" class="game-card">
             <div>
-                <h2>Game 1 Title</h2>
-                <p>Game 1 introduction and short description goes here.</p>
+                <h2>Game 1: Essentials v1.0</h2>
+                <p>Master basic introductions, greetings, and pronouns with interactive multiple-choice cards.</p>
             </div>
-            <span class="badge">Category</span>
+            <span class="badge">Multiple Choice</span>
         </a>
 
         <!-- Game 2 -->
-        <a href="https://samsumhouman.github.io/Chinese-Language-Games/games/game2/index.html" class="game-card">
+        <a href="games/game2/index.html" class="game-card">
             <div>
-                <h2>Game 2 Title</h2>
-                <p>Game 2 introduction and short description goes here.</p>
+                <h2>Game 2: Numbers & Colors</h2>
+                <p>Practice Chinese numbers 1–10 and primary colors using dynamic card matching.</p>
             </div>
-            <span class="badge">Category</span>
+            <span class="badge">Multiple Choice</span>
         </a>
 
         <!-- Game 3 -->
-        <a href="https://samsumhouman.github.io/Chinese-Language-Games/games/game3/index.html" class="game-card">
+        <a href="games/game3/index.html" class="game-card">
             <div>
-                <h2>Game 3 Title</h2>
-                <p>Game 3 introduction and short description goes here.</p>
+                <h2>Game 3: Dates & Age (AC1-L2)</h2>
+                <p>Learn vocabulary for birthdays, years, days, and age statements.</p>
             </div>
-            <span class="badge">Category</span>
+            <span class="badge">Multiple Choice</span>
         </a>
 
         <!-- Game 4 -->
-        <a href="https://samsumhouman.github.io/Chinese-Language-Games/games/game4/index.html" class="game-card">
+        <a href="games/game4/index.html" class="game-card">
             <div>
-                <h2>Game 4 Title</h2>
-                <p>Game 4 introduction and short description goes here.</p>
+                <h2>Game 4: Family Challenge</h2>
+                <p>A 60-second timed quiz on family vocabulary featuring native voice pronunciation.</p>
             </div>
-            <span class="badge">Category</span>
+            <span class="badge">Timed Quiz</span>
         </a>
 
         <!-- Game 5 -->
-        <a href="https://samsumhouman.github.io/Chinese-Language-Games/games/game5/index.html" class="game-card">
+        <a href="games/game5/index.html" class="game-card">
             <div>
-                <h2>Game 5 Title</h2>
-                <p>Game 5 introduction and short description goes here.</p>
+                <h2>Game 5: Drag Match Adventure</h2>
+                <p>3-level Pinyin-to-Hanzi matching game with drag-and-drop or tap-to-select controls.</p>
             </div>
-            <span class="badge">Category</span>
+            <span class="badge">Drag & Match</span>
         </a>
 
         <!-- Game 6 -->
-        <a href="https://samsumhouman.github.io/Chinese-Language-Games/games/game6/index.html" class="game-card">
+        <a href="games/game6/index.html" class="game-card">
             <div>
-                <h2>Game 6 Title</h2>
-                <p>Game 6 introduction and short description goes here.</p>
+                <h2>Game 6: Panda Match (AC1-L2)</h2>
+                <p>Touch-friendly multi-level drag matching focused on dates, time, and numbers.</p>
             </div>
-            <span class="badge">Category</span>
+            <span class="badge">Drag & Match</span>
         </a>
-    </main>
-        
+
         <!-- Game 7 -->
-        <a href="https://samsumhouman.github.io/Chinese-Language-Games/games/game7/index.html" class="game-card">
+        <a href="games/game7/index.html" class="game-card">
             <div>
-                <h2>Game 7 Title</h2>
-                <p>Game 7 introduction and short description goes here.</p>
+                <h2>Game 7: Panda Match (AC1-L3)</h2>
+                <p>Multi-level drag matching challenge covering school terms, action verbs, and places.</p>
             </div>
-            <span class="badge">Category</span>
+            <span class="badge">Drag & Match</span>
         </a>
     </main>
 
