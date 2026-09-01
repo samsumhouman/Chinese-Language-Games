@@ -1,29 +1,248 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Drag Match Adventure</title><style>
-body{font-family:Arial,Microsoft YaHei;background:linear-gradient(#bfefff,#e8ffd7);margin:0}
-#app{max-width:980px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;font-size:22px}
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}.item,.target{background:#fff;border:2px solid #7bbf6a;border-radius:12px;padding:12px;margin:8px;font-size:24px;text-align:center}
-.item{cursor:grab}.done{background:#bff5bf}.bad{background:#ffd5d5}.over{background:#eef}
-</style></head><body><div id=app></div><script>
-const levels=[[["nǐ hǎo","你好"],["wǒ","我"],["jiào","叫"],["nǐ","你"],["shì","是"],["péng yǒu","朋友"]],[["xiǎo","小"],["tā","他"],["shén me","什么"],["míng zi","名字"],["nǐ men","你们"],["ne","呢"]],[["xìng","姓"],["tā","她"],["tā men","他们"]]];
-let lv=0,score=0,time=60,t;
-function sh(a){return [...a].sort(()=>Math.random()-.5)}
-function say(x){if(speechSynthesis){speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(x);u.lang='zh-CN';speechSynthesis.speak(u)}}
-function timer(){t=setInterval(()=>{time--;tm.textContent=time;if(time<=0)end();},1000)}
-function end(){clearInterval(t);app.innerHTML=`<h1>⏰ 游戏结束</h1><h2>得分：${score}</h2><button onclick=location.reload()>再玩一次</button>`}
-function render(){
- if(lv>=levels.length)return end();
- let d=levels[lv];
- app.innerHTML=`<h1>🐼 第${lv+1}关</h1><div class=top><div>⭐ <span id=sc>${score}</span></div><div>⏰ <span id=tm>${time}</span>s</div><div>Level ${lv+1}/3</div></div><div class=cols><div id=L></div><div id=R></div></div>`;
- sh(d).forEach((x,i)=>{let e=document.createElement('div');e.className='item';e.draggable=true;e.id='i'+i;e.dataset.m=x[1];e.textContent=x[0];e.ondragstart=v=>v.dataTransfer.setData('id',e.id);L.appendChild(e);});
- sh(d).forEach(x=>{let z=document.createElement('div');z.className='target';z.dataset.m=x[1];z.textContent=x[1];
- z.ondragover=e=>{e.preventDefault();z.classList.add('over')};z.ondragleave=()=>z.classList.remove('over');
- z.ondrop=e=>{e.preventDefault();z.classList.remove('over');let it=document.getElementById(e.dataTransfer.getData('id'));
- if(it.dataset.m===z.dataset.m){score+=10;sc.textContent=score;z.className='target done';z.textContent='✅ '+z.dataset.m;say(z.dataset.m);it.remove();if(!document.querySelector('.item')){lv++;setTimeout(render,500);}}
- else{score=Math.max(0,score-5);sc.textContent=score;z.classList.add('bad');z.animate([{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:220});setTimeout(()=>z.classList.remove('bad'),300);}
- };
- R.appendChild(z);});
- if(!t)timer();
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Drag Match Adventure</title>
+<style>
+body {
+    font-family: Arial, Microsoft YaHei, sans-serif;
+    background: linear-gradient(#bfefff, #e8ffd7);
+    margin: 0;
+    min-height: 100vh;
+    user-select: none;
 }
+#app {
+    max-width: 980px;
+    margin: auto;
+    padding: 20px;
+}
+.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: #2d6a2f;
+    margin-bottom: 15px;
+}
+.cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+.item, .target {
+    background: #fff;
+    border: 2px solid #7bbf6a;
+    border-radius: 12px;
+    padding: 14px;
+    margin: 8px 0;
+    font-size: 24px;
+    text-align: center;
+    transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
+}
+.item {
+    cursor: grab;
+}
+.item.selected {
+    background: #e0f2fe;
+    border-color: #0284c7;
+    transform: scale(1.03);
+}
+.done {
+    background: #bff5bf !important;
+    border-color: #28a745 !important;
+}
+.bad {
+    background: #ffd5d5 !important;
+    border-color: #dc3545 !important;
+}
+.over {
+    background: #eef2ff;
+    border-color: #4f46e5;
+}
+.btn-restart {
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    background: #4caf50;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 25px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+.sub-info {
+    text-align: center;
+    color: #555;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+@media (max-width: 600px) {
+    .cols { gap: 10px; }
+    .item, .target { font-size: 20px; padding: 10px; }
+    .top { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const levels = [
+    [["nǐ hǎo","你好"],["wǒ","我"],["jiào","叫"],["nǐ","你"],["shì","是"],["péng yǒu","朋友"]],
+    [["xiǎo","小"],["tā","他"],["shén me","什么"],["míng zi","名字"],["nǐ men","你们"],["ne","呢"]],
+    [["xìng","姓"],["tā","她"],["tā men","他们"]]
+];
+
+let lv = 0, score = 0, time = 60, t = null, selectedItem = null;
+
+function sh(a) { return [...a].sort(() => Math.random() - 0.5); }
+
+function say(x) {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        let u = new SpeechSynthesisUtterance(x);
+        u.lang = 'zh-CN';
+        u.rate = 0.9;
+        window.speechSynthesis.speak(u);
+    }
+}
+
+function timer() {
+    if (t) clearInterval(t);
+    t = setInterval(() => {
+        time--;
+        const tmEl = document.getElementById('tm');
+        if (tmEl) tmEl.textContent = time;
+        if (time <= 0) end();
+    }, 1000);
+}
+
+function end() {
+    clearInterval(t);
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <div style="text-align:center; padding:40px 20px;">
+            <h1>⏰ 游戏结束！</h1>
+            <h2>最终得分：⭐ ${score}</h2>
+            <button class="btn-restart" onclick="location.reload()">再玩一次</button>
+        </div>
+    `;
+}
+
+function checkMatch(itemElem, targetElem) {
+    const scEl = document.getElementById('sc');
+    if (itemElem.dataset.m === targetElem.dataset.m) {
+        score += 10;
+        if (scEl) scEl.textContent = score;
+        targetElem.className = 'target done';
+        targetElem.textContent = '✅ ' + targetElem.dataset.m;
+        say(targetElem.dataset.m);
+        itemElem.remove();
+        selectedItem = null;
+
+        if (!document.querySelector('.item')) {
+            lv++;
+            if (lv >= levels.length) {
+                setTimeout(end, 500);
+            } else {
+                setTimeout(render, 500);
+            }
+        }
+    } else {
+        score = Math.max(0, score - 5);
+        if (scEl) scEl.textContent = score;
+        targetElem.classList.add('bad');
+        targetElem.animate([
+            { transform: 'translateX(-6px)' },
+            { transform: 'translateX(6px)' },
+            { transform: 'translateX(0)' }
+        ], { duration: 220 });
+        setTimeout(() => targetElem.classList.remove('bad'), 300);
+    }
+}
+
+function render() {
+    if (lv >= levels.length) return end();
+    selectedItem = null;
+    let d = levels[lv];
+
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <h1 style="text-align:center; margin-bottom: 5px;">🐼 第 ${lv + 1} 关</h1>
+        <div class="sub-info">拖拽 或 点击选择 进行配对</div>
+        <div class="top">
+            <div>⭐ <span id="sc">${score}</span></div>
+            <div>⏰ <span id="tm">${time}</span>s</div>
+            <div>Level ${lv + 1}/${levels.length}</div>
+        </div>
+        <div class="cols">
+            <div id="L"></div>
+            <div id="R"></div>
+        </div>
+    `;
+
+    const leftCol = document.getElementById('L');
+    const rightCol = document.getElementById('R');
+
+    sh(d).forEach((x, i) => {
+        let e = document.createElement('div');
+        e.className = 'item';
+        e.draggable = true;
+        e.id = 'i' + i + '_' + Date.now();
+        e.dataset.m = x[1];
+        e.textContent = x[0];
+
+        e.ondragstart = v => {
+            v.dataTransfer.setData('id', e.id);
+        };
+
+        e.onclick = () => {
+            document.querySelectorAll('.item').forEach(el => el.classList.remove('selected'));
+            if (selectedItem === e) {
+                selectedItem = null;
+            } else {
+                selectedItem = e;
+                e.classList.add('selected');
+            }
+        };
+
+        leftCol.appendChild(e);
+    });
+
+    sh(d).forEach(x => {
+        let z = document.createElement('div');
+        z.className = 'target';
+        z.dataset.m = x[1];
+        z.textContent = x[1];
+
+        z.ondragover = e => {
+            e.preventDefault();
+            z.classList.add('over');
+        };
+        z.ondragleave = () => z.classList.remove('over');
+        z.ondrop = e => {
+            e.preventDefault();
+            z.classList.remove('over');
+            const draggedId = e.dataTransfer.getData('id');
+            const it = document.getElementById(draggedId);
+            if (it) checkMatch(it, z);
+        };
+
+        z.onclick = () => {
+            if (selectedItem && !z.classList.contains('done')) {
+                checkMatch(selectedItem, z);
+            }
+        };
+
+        rightCol.appendChild(z);
+    });
+
+    if (!t) timer();
+}
+
 render();
-</script></body></html>
+</script>
+</body>
+</html>
