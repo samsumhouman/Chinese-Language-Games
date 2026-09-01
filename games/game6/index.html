@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Panda Chinese Games - AC1-L2 Drag Match</title>
+<title>Panda Chinese Games - AC1-L3 Drag Match</title>
 <style>
 :root {
   --primary-bg: linear-gradient(135deg, #a8ebd0 0%, #c6f1d6 50%, #e8f8dc 100%);
@@ -158,33 +158,30 @@ body {
 
 <script>
 const levels = [
-  // 关卡 1: 日期与时间
+  // Level 1: School & Classroom
   [
-    ["nián", "年"],
-    ["shēng rì", "生日"],
-    ["chū shēng", "出生"],
-    ["jīn nián", "今年"],
-    ["jīn tiān", "今天"],
-    ["suì", "岁"],
-    ["yuè", "月"],
-    ["rì", "日"]
+    ["xué xiào", "学校"],
+    ["lǎo shī", "老师"],
+    ["xué shēng", "学生"],
+    ["kè", "课"],
+    ["shū", "书"],
+    ["bǐ", "笔"]
   ],
-  // 关卡 2: 数字 0-5
+  // Level 2: Common Verbs
   [
-    ["líng", "零"],
-    ["yī", "一"],
-    ["èr", "二"],
-    ["sān", "三"],
-    ["sì", "四"],
-    ["wǔ", "五"]
+    ["kàn", "看"],
+    ["tīng", "听"],
+    ["xiě", "写"],
+    ["dú", "读"],
+    ["chī", "吃"],
+    ["hē", "喝"]
   ],
-  // 关卡 3: 数字 6-10
+  // Level 3: Places & Nations
   [
-    ["liù", "六"],
-    ["qī", "七"],
-    ["bā", "八"],
-    ["jiǔ", "九"],
-    ["shí", "十"]
+    ["jiā", "家"],
+    ["zhōng guó", "中国"],
+    ["shāng diàn", "商店"],
+    ["yī yuàn", "医院"]
   ]
 ];
 
@@ -229,7 +226,7 @@ function end(isWin = true) {
     <div class="end-screen">
       <h1>${isWin ? '🎉 闯关成功！' : '⏰ 时间到！'}</h1>
       <h2>最终得分：⭐ ${score} 分</h2>
-      <p style="font-size:20px; color:#666;">🐼 太棒了！你完成了 AC1-L2 词汇挑战！</p>
+      <p style="font-size:20px; color:#666;">🐼 太棒了！你完成了 AC1-L3 词汇挑战！</p>
       <button class="btn-restart" onclick="restartGame()">再玩一次</button>
     </div>
   `;
@@ -248,7 +245,7 @@ function render() {
 
   app.innerHTML = `
     <div class="header">
-      <div class="title-box">🐼 Panda Match (AC1-L2)</div>
+      <div class="title-box">🐼 Panda Match (AC1-L3)</div>
       <div class="stats">
         <div class="stat-item">⭐ <span id="sc">${score}</span></div>
         <div class="stat-item">⏰ <span id="tm">${time}</span>s</div>
@@ -270,7 +267,6 @@ function render() {
   const L = document.getElementById('L');
   const R = document.getElementById('R');
 
-  // 左侧：拼音列表（打乱）
   sh(data).forEach((x, i) => {
     let e = document.createElement('div');
     e.className = 'item';
@@ -279,18 +275,14 @@ function render() {
     e.dataset.match = x[1];
     e.textContent = x[0];
 
-    // Drag start
     e.ondragstart = (ev) => {
       ev.dataTransfer.setData('text/plain', e.id);
     };
 
-    // Touch support
     setupTouchDrag(e);
-
     L.appendChild(e);
   });
 
-  // 右侧：汉字列表（打乱）
   sh(data).forEach((x) => {
     let z = document.createElement('div');
     z.className = 'target';
@@ -335,13 +327,11 @@ function render() {
   });
 }
 
-// 触屏支持
 function setupTouchDrag(el) {
   let clone = null;
 
   el.ontouchstart = (e) => {
     let touch = e.touches[0];
-
     clone = el.cloneNode(true);
     clone.style.position = 'fixed';
     clone.style.zIndex = '1000';
@@ -355,7 +345,7 @@ function setupTouchDrag(el) {
 
   el.ontouchmove = (e) => {
     if (!clone) return;
-    if (e.cancelable) e.preventDefault(); // Prevents touch scrolling while dragging
+    if (e.cancelable) e.preventDefault();
     let touch = e.touches[0];
     clone.style.left = (touch.clientX - el.offsetWidth / 2) + 'px';
     clone.style.top = (touch.clientY - el.offsetHeight / 2) + 'px';
