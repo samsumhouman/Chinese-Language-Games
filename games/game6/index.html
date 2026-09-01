@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -22,6 +22,7 @@ body {
   justify-content: center;
   align-items: center;
   user-select: none;
+  overflow-x: hidden;
 }
 #app {
   width: 100%;
@@ -336,13 +337,10 @@ function render() {
 
 // 触屏支持
 function setupTouchDrag(el) {
-  let touchStartX, touchStartY;
   let clone = null;
 
   el.ontouchstart = (e) => {
     let touch = e.touches[0];
-    touchStartX = touch.clientX;
-    touchStartY = touch.clientY;
 
     clone = el.cloneNode(true);
     clone.style.position = 'fixed';
@@ -357,6 +355,7 @@ function setupTouchDrag(el) {
 
   el.ontouchmove = (e) => {
     if (!clone) return;
+    if (e.cancelable) e.preventDefault(); // Prevents touch scrolling while dragging
     let touch = e.touches[0];
     clone.style.left = (touch.clientX - el.offsetWidth / 2) + 'px';
     clone.style.top = (touch.clientY - el.offsetHeight / 2) + 'px';
