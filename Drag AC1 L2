@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Panda Chinese Games - AC1-L2 Drag Match</title>
+<style>
+:root {
+  --primary-bg: linear-gradient(135deg, #a8ebd0 0%, #c6f1d6 50%, #e8f8dc 100%);
+  --panel-bg: rgba(255, 255, 255, 0.9);
+  --card-border: #82c973;
+  --done-bg: #d4edda;
+  --bad-bg: #f8d7da;
+}
+* { box-sizing: border-box; touch-action: manipulation; }
+body {
+  font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  background: var(--primary-bg);
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+}
+#app {
+  width: 100%;
+  max-width: 900px;
+  margin: 15px;
+  padding: 24px;
+  background: var(--panel-bg);
+  border-radius: 24px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+  backdrop-filter: blur(8px);
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px dashed #b2e2a2;
+}
+.title-box { font-size: 26px; font-weight: bold; color: #2d6a2f; display: flex; align-items: center; gap: 8px; }
+.stats { display: flex; gap: 20px; font-size: 20px; font-weight: bold; color: #333; }
+.stat-item { background: #fff; padding: 6px 16px; border-radius: 20px; border: 2px solid #b2e2a2; box-shadow: 0 3px 6px rgba(0,0,0,0.05); }
+
+.cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.col-header {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: #4a7c44;
+  margin-bottom: 10px;
+}
+.item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.item, .target {
+  background: #fff;
+  border: 3px solid var(--card-border);
+  border-radius: 16px;
+  padding: 14px 20px;
+  font-size: 26px;
+  text-align: center;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+}
+.item {
+  cursor: grab;
+  color: #2b6cb0;
+  background: #f7fafc;
+}
+.item:active { cursor: grabbing; transform: scale(1.03); }
+.target {
+  color: #2d3748;
+  border-style: dashed;
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.target.over {
+  border-color: #3182ce;
+  background: #ebf8ff;
+  transform: scale(1.02);
+}
+.target.done {
+  background: var(--done-bg);
+  border-color: #28a745;
+  border-style: solid;
+  color: #155724;
+}
+.target.bad {
+  background: var(--bad-bg);
+  border-color: #dc3545;
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+.star-fly {
+  position: fixed;
+  font-size: 28px;
+  pointer-events: none;
+  animation: fly 0.8s ease-out forwards;
+  z-index: 1000;
+}
+@keyframes fly {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
+}
+
+.end-screen {
+  text-align: center;
+  padding: 30px 10px;
+}
+.end-screen h1 { font-size: 42px; color: #2d6a2f; margin-bottom: 10px; }
+.end-screen h2 { font-size: 28px; color: #4a7c44; margin-bottom: 25px; }
+.btn-restart {
+  font-size: 22px;
+  font-weight: bold;
+  color: #fff;
+  background: #4caf50;
+  border: none;
+  padding: 12px 36px;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #388e3c;
+  transition: all 0.1s;
+}
+.btn-restart:hover { background: #45a049; }
+.btn-restart:active { transform: translateY(4px); box-shadow: 0 2px 0 #388e3c; }
+
+@media (max-width: 600px) {
+  .cols { gap: 10px; }
+  .item, .target { font-size: 20px; padding: 10px; }
+  .title-box { font-size: 20px; }
+  .stats { font-size: 16px; gap: 8px; }
+}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+const levels = [
+  // 关卡 1: 日期与时间
+  [
+    ["nián", "年"],
+    ["shēng rì", "生日"],
+    ["chū shēng", "出生"],
+    ["jīn nián", "今年"],
+    ["jīn tiān", "今天"],
+    ["suì", "岁"],
+    ["yuè", "月"],
+    ["rì", "日"]
+  ],
+  // 关卡 2: 数字 0-5
+  [
+    ["líng", "零"],
+    ["yī", "一"],
+    ["èr", "二"],
+    ["sān", "三"],
+    ["sì", "四"],
+    ["wǔ", "五"]
+  ],
+  // 关卡 3: 数字 6-10
+  [
+    ["liù", "六"],
+    ["qī", "七"],
+    ["bā", "八"],
+    ["jiǔ", "九"],
+    ["shí", "十"]
+  ]
+];
+
+let lv = 0, score = 0, time = 60, timerId = null;
+
+function sh(a) { return [...a].sort(() => Math.random() - 0.5); }
+
+function say(txt) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    let u = new SpeechSynthesisUtterance(txt);
+    u.lang = 'zh-CN';
+    u.rate = 0.9;
+    window.speechSynthesis.speak(u);
+  }
+}
+
+function startTimer() {
+  if (timerId) clearInterval(timerId);
+  timerId = setInterval(() => {
+    time--;
+    const tmEl = document.getElementById('tm');
+    if (tmEl) tmEl.textContent = time;
+    if (time <= 0) end(false);
+  }, 1000);
+}
+
+function showStar(x, y) {
+  const el = document.createElement('div');
+  el.className = 'star-fly';
+  el.textContent = '⭐ +10';
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 800);
+}
+
+function end(isWin = true) {
+  clearInterval(timerId);
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="end-screen">
+      <h1>${isWin ? '🎉 闯关成功！' : '⏰ 时间到！'}</h1>
+      <h2>最终得分：⭐ ${score} 分</h2>
+      <p style="font-size:20px; color:#666;">🐼 太棒了！你完成了 AC1-L2 词汇挑战！</p>
+      <button class="btn-restart" onclick="restartGame()">再玩一次</button>
+    </div>
+  `;
+}
+
+function restartGame() {
+  lv = 0; score = 0; time = 60;
+  render();
+  startTimer();
+}
+
+function render() {
+  if (lv >= levels.length) return end(true);
+  const data = levels[lv];
+  const app = document.getElementById('app');
+
+  app.innerHTML = `
+    <div class="header">
+      <div class="title-box">🐼 Panda Match (AC1-L2)</div>
+      <div class="stats">
+        <div class="stat-item">⭐ <span id="sc">${score}</span></div>
+        <div class="stat-item">⏰ <span id="tm">${time}</span>s</div>
+        <div class="stat-item">关卡 ${lv + 1}/${levels.length}</div>
+      </div>
+    </div>
+    <div class="cols">
+      <div>
+        <div class="col-header">📌 拖拽拼音</div>
+        <div class="item-list" id="L"></div>
+      </div>
+      <div>
+        <div class="col-header">🎯 匹配汉字</div>
+        <div class="item-list" id="R"></div>
+      </div>
+    </div>
+  `;
+
+  const L = document.getElementById('L');
+  const R = document.getElementById('R');
+
+  // 左侧：拼音列表（打乱）
+  sh(data).forEach((x, i) => {
+    let e = document.createElement('div');
+    e.className = 'item';
+    e.draggable = true;
+    e.id = 'item_' + i;
+    e.dataset.match = x[1];
+    e.textContent = x[0];
+
+    // Drag start
+    e.ondragstart = (ev) => {
+      ev.dataTransfer.setData('text/plain', e.id);
+    };
+
+    // Touch support
+    setupTouchDrag(e);
+
+    L.appendChild(e);
+  });
+
+  // 右侧：汉字列表（打乱）
+  sh(data).forEach((x) => {
+    let z = document.createElement('div');
+    z.className = 'target';
+    z.dataset.match = x[1];
+    z.textContent = x[1];
+
+    z.ondragover = (ev) => {
+      ev.preventDefault();
+      z.classList.add('over');
+    };
+    z.ondragleave = () => z.classList.remove('over');
+
+    z.ondrop = (ev) => {
+      ev.preventDefault();
+      z.classList.remove('over');
+      let itemId = ev.dataTransfer.getData('text/plain');
+      let itemEl = document.getElementById(itemId);
+      if (!itemEl) return;
+
+      if (itemEl.dataset.match === z.dataset.match) {
+        score += 10;
+        document.getElementById('sc').textContent = score;
+        z.className = 'target done';
+        z.textContent = '✅ ' + z.dataset.match;
+        say(z.dataset.match);
+        showStar(ev.clientX || z.offsetLeft + 50, ev.clientY || z.offsetTop);
+        itemEl.remove();
+
+        if (L.children.length === 0) {
+          lv++;
+          setTimeout(render, 600);
+        }
+      } else {
+        score = Math.max(0, score - 5);
+        document.getElementById('sc').textContent = score;
+        z.classList.add('bad');
+        setTimeout(() => z.classList.remove('bad'), 400);
+      }
+    };
+
+    R.appendChild(z);
+  });
+}
+
+// 触屏支持
+function setupTouchDrag(el) {
+  let touchStartX, touchStartY;
+  let clone = null;
+
+  el.ontouchstart = (e) => {
+    let touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+
+    clone = el.cloneNode(true);
+    clone.style.position = 'fixed';
+    clone.style.zIndex = '1000';
+    clone.style.opacity = '0.85';
+    clone.style.pointerEvents = 'none';
+    clone.style.width = el.offsetWidth + 'px';
+    clone.style.left = (touch.clientX - el.offsetWidth / 2) + 'px';
+    clone.style.top = (touch.clientY - el.offsetHeight / 2) + 'px';
+    document.body.appendChild(clone);
+  };
+
+  el.ontouchmove = (e) => {
+    if (!clone) return;
+    let touch = e.touches[0];
+    clone.style.left = (touch.clientX - el.offsetWidth / 2) + 'px';
+    clone.style.top = (touch.clientY - el.offsetHeight / 2) + 'px';
+  };
+
+  el.ontouchend = (e) => {
+    if (!clone) return;
+    let touch = e.changedTouches[0];
+    clone.remove();
+    clone = null;
+
+    let targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (!targetEl) return;
+
+    let targetContainer = targetEl.closest('.target');
+    if (targetContainer && !targetContainer.classList.contains('done')) {
+      if (el.dataset.match === targetContainer.dataset.match) {
+        score += 10;
+        document.getElementById('sc').textContent = score;
+        targetContainer.className = 'target done';
+        targetContainer.textContent = '✅ ' + targetContainer.dataset.match;
+        say(targetContainer.dataset.match);
+        showStar(touch.clientX, touch.clientY);
+        el.remove();
+
+        const L = document.getElementById('L');
+        if (L && L.children.length === 0) {
+          lv++;
+          setTimeout(render, 600);
+        }
+      } else {
+        score = Math.max(0, score - 5);
+        document.getElementById('sc').textContent = score;
+        targetContainer.classList.add('bad');
+        setTimeout(() => targetContainer.classList.remove('bad'), 400);
+      }
+    }
+  };
+}
+
+window.onload = () => {
+  render();
+  startTimer();
+};
+</script>
+</body>
+</html>
