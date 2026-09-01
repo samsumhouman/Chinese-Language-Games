@@ -1,148 +1,183 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Panda Chinese Games v2.0 - Numbers & Colors</title>
-<style>
-body {
-    margin: 0;
-    font-family: Segoe UI, Microsoft YaHei, sans-serif;
-    background: linear-gradient(#9be7ff, #dff7d8);
-    min-height: 100vh;
-    overflow-x: hidden;
-}
-.sky { position: fixed; inset: 0; background: radial-gradient(circle at 20% 20%, #fff8, transparent 25%); z-index: -1; }
-.wrap { max-width: 980px; margin: 20px auto; padding: 20px; position: relative; }
-.panel { background: #ffffffcc; border-radius: 22px; padding: 18px; backdrop-filter: blur(6px); box-shadow: 0 8px 20px #0002; }
-.top { display: flex; justify-content: space-between; align-items: center; }
-#prompt { text-align: center; font-size: 36px; margin: 18px; font-weight: 700; }
-#grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-.card { background: #fff; border-radius: 18px; padding: 18px; text-align: center; cursor: pointer; transition: .35s; transform-style: preserve-3d; border: 3px solid #e6e6e6; }
-.card:hover { transform: translateY(-4px) rotateY(8deg); }
-.card.correct { background: #c8ffd2; box-shadow: 0 0 25px #7cff91; }
-.card.wrong { background: #ffe0e0; border-color: #ff9999; }
-.h { font-size: 34px; }
-.p { color: #666; font-size: 20px; }
-.e { color: #2b6cb0; }
-#panda { font-size: 84px; text-align: center; transition: .6s; }
-#combo, #msg { text-align: center; font-weight: bold; }
-#combo { color: #ff6b00; font-size: 28px; height: 34px; }
-#msg { height: 32px; font-size: 24px; }
-.star { position: fixed; font-size: 22px; pointer-events: none; animation: fly .9s linear forwards; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chinese Language Games</title>
+    <style>
+        :root {
+            --primary: #dc2626;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --subtext: #64748b;
+            --badge-bg: #fee2e2;
+        }
 
-@keyframes fly {
-    0% { opacity: 1; transform: translate(0, 0) scale(.6); }
-    100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(1.8); }
-}
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-button, select { font-size: 18px; padding: 8px 12px; border-radius: 10px; }
-</style>
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin: 0 0 0.5rem 0;
+        }
+
+        p {
+            color: var(--subtext);
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .game-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 1.5rem;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .game-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-color: #fca5a5;
+        }
+
+        .game-card h2 {
+            margin: 0 0 0.5rem 0;
+            color: var(--primary);
+            font-size: 1.25rem;
+        }
+
+        .game-card p {
+            font-size: 0.95rem;
+            margin: 0 0 1.25rem 0;
+            line-height: 1.4;
+        }
+
+        .badge {
+            align-self: flex-start;
+            background: var(--badge-bg);
+            color: var(--primary);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
 </head>
 <body>
-<div class="sky"></div>
-<div class="wrap">
-    <div class="panel" id="app"></div>
-</div>
 
-<script>
-// Vocabulary focused on Numbers and Colors for Game 2
-const words = [
-    {h:"一", p:"yī", e:"One"}, {h:"二", p:"èr", e:"Two"}, {h:"三", p:"sān", e:"Three"},
-    {h:"四", p:"sì", e:"Four"}, {h:"五", p:"wǔ", e:"Five"}, {h:"六", p:"liù", e:"Six"},
-    {h:"七", p:"qī", e:"Seven"}, {h:"八", p:"bā", e:"Eight"}, {h:"九", p:"jiǔ", e:"Nine"},
-    {h:"十", p:"shí", e:"Ten"}, {h:"红色", p:"hóng sè", e:"Red"}, {h:"蓝色", p:"lán sè", e:"Blue"},
-    {h:"绿色", p:"lǜ sè", e:"Green"}, {h:"黄色", p:"huáng sè", e:"Yellow"}, {h:"黑色", p:"hēi sè", e:"Black"}
-];
+    <header>
+        <h1>🇨🇳 Chinese Language Games</h1>
+        <p>Select a game to practice your Pinyin, Characters, and Vocabulary</p>
+    </header>
 
-let score = 0, combo = 0, mode = "p2h", target;
-let isLocked = false; 
+    <main class="game-grid">
+        <!-- ================= ACTIVE GAMES ================= -->
 
-const app = document.getElementById('app');
-const sh = a => [...a].sort(() => Math.random() - .5);
-
-function particle(x, y) {
-    for(let i = 0; i < 12; i++) {
-        let s = document.createElement('div');
-        s.className = 'star';
-        s.textContent = '⭐';
-        s.style.left = x + 'px';
-        s.style.top = y + 'px';
-        s.style.setProperty('--tx', `${(Math.random() - 0.5) * 300}px`);
-        s.style.setProperty('--ty', `${(Math.random() - 0.5) * 300}px`);
-        document.body.appendChild(s);
-        setTimeout(() => s.remove(), 900);
-    }
-}
-
-function render() {
-    isLocked = false;
-    target = words[Math.floor(Math.random() * words.length)];
-    let opts = sh(words).slice(0, 4);
-    if (!opts.includes(target)) opts[0] = target;
-    opts = sh(opts);
-
-    app.innerHTML = `
-        <div class="top">
-            <div>⭐ ${score}</div>
+        <!-- Game 1 -->
+        <a href="games/game1/index.html" class="game-card">
             <div>
-                <select id="m">
-                    <option value="p2h">拼音→汉字</option>
-                    <option value="h2p">汉字→拼音</option>
-                    <option value="e2h">English→汉字</option>
-                </select>
+                <h2>Game 1</h2>
+                <p>Master basic introductions, greetings, and pronouns with interactive multiple-choice cards.</p>
             </div>
-        </div>
-        <div id="prompt">${mode == "p2h" ? target.p : mode == "h2p" ? target.h : target.e}</div>
-        <div id="combo">${combo >= 2 ? "🔥 Combo x" + combo : ""}</div>
-        <div id="msg"></div>
-        <div id="grid"></div>
-        <div id="panda">🐼🎋</div>
-    `;
+            <span class="badge">Multiple Choice</span>
+        </a>
 
-    const selectEl = document.getElementById('m');
-    const msgEl = document.getElementById('msg');
-    const pandaEl = document.getElementById('panda');
-    const gridEl = document.getElementById('grid');
+        <!-- Game 5 (Displayed as Game 2) -->
+        <a href="games/game5/index.html" class="game-card">
+            <div>
+                <h2>Game 2</h2>
+                <p>3-level Pinyin-to-Hanzi matching game with drag-and-drop or tap-to-select controls.</p>
+            </div>
+            <span class="badge">Drag & Match</span>
+        </a>
 
-    selectEl.value = mode;
-    selectEl.onchange = e => { mode = e.target.value; render(); };
 
-    opts.forEach(o => {
-        let d = document.createElement('div');
-        d.className = 'card';
-        d.innerHTML = mode == "h2p" 
-            ? `<div class="p">${o.p}</div><div class="e">${o.e}</div>` 
-            : mode == "e2h" 
-            ? `<div class="h">${o.h}</div><div class="p">${o.p}</div>` 
-            : `<div class="h">${o.h}</div><div class="e">${o.e}</div>`;
+        <!-- ================= DRAFT GAMES (HIDDEN) ================= -->
 
-        d.onclick = (ev) => {
-            if (isLocked) return;
-            isLocked = true;
+        <!-- 
+        <a href="games/game2/index.html" class="game-card">
+            <div>
+                <h2>Game 3</h2>
+                <p>Practice Chinese numbers 1–10 and primary colors using dynamic card matching.</p>
+            </div>
+            <span class="badge">Multiple Choice</span>
+        </a>
+        -->
 
-            if (o === target) {
-                score += 10;
-                combo++;
-                d.classList.add('correct');
-                msgEl.textContent = "🐼 Great!";
-                pandaEl.textContent = "🐼💨🎋";
-                particle(ev.clientX, ev.clientY);
-                setTimeout(() => { pandaEl.textContent = "🐼😋"; }, 250);
-                setTimeout(render, 700);
-            } else {
-                combo = 0;
-                score = Math.max(0, score - 2);
-                d.classList.add('wrong');
-                msgEl.textContent = "❌ Try again";
-                setTimeout(render, 600);
-            }
-        };
-        gridEl.appendChild(d);
-    });
-}
+        <!-- 
+        <a href="games/game3/index.html" class="game-card">
+            <div>
+                <h2>Game 4</h2>
+                <p>Learn vocabulary for birthdays, years, days, and age statements.</p>
+            </div>
+            <span class="badge">Multiple Choice</span>
+        </a>
+        -->
 
-render();
-</script>
+        <!-- 
+        <a href="games/game4/index.html" class="game-card">
+            <div>
+                <h2>Game 5</h2>
+                <p>A 60-second timed quiz on family vocabulary featuring native voice pronunciation.</p>
+            </div>
+            <span class="badge">Timed Quiz</span>
+        </a>
+        -->
+
+        <!-- 
+        <a href="games/game6/index.html" class="game-card">
+            <div>
+                <h2>Game 6</h2>
+                <p>Touch-friendly multi-level drag matching focused on dates, time, and numbers.</p>
+            </div>
+            <span class="badge">Drag & Match</span>
+        </a>
+        -->
+
+        <!-- 
+        <a href="games/game7/index.html" class="game-card">
+            <div>
+                <h2>Game 7</h2>
+                <p>Multi-level drag matching challenge covering school terms, action verbs, and places.</p>
+            </div>
+            <span class="badge">Drag & Match</span>
+        </a>
+        -->
+
+    </main>
+
 </body>
 </html>
