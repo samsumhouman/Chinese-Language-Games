@@ -1,0 +1,61 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Panda Chinese Games - AC1-L2</title>
+<style>
+body{margin:0;font-family:Segoe UI,Microsoft YaHei;background:linear-gradient(#9be7ff,#dff7d8);overflow:hidden}
+.sky{position:fixed;inset:0;background:radial-gradient(circle at 20% 20%,#fff8,transparent 25%)}
+.wrap{max-width:980px;margin:20px auto;padding:20px;position:relative}
+.panel{background:#ffffffcc;border-radius:22px;padding:18px;backdrop-filter:blur(6px);box-shadow:0 8px 20px #0002}
+.top{display:flex;justify-content:space-between;align-items:center}
+#prompt{text-align:center;font-size:36px;margin:18px;font-weight:700}
+#grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.card{background:#fff;border-radius:18px;padding:18px;text-align:center;cursor:pointer;transition:.35s;transform-style:preserve-3d;border:3px solid #e6e6e6}
+.card:hover{transform:translateY(-4px) rotateY(8deg)}
+.card.correct{background:#c8ffd2;box-shadow:0 0 25px #7cff91}
+.h{font-size:34px}.p{color:#666;font-size:20px}.e{color:#2b6cb0}
+#panda{font-size:84px;text-align:center;transition:.6s}
+#combo,#msg{text-align:center;font-weight:bold}
+#combo{color:#ff6b00;font-size:28px;height:34px}
+#msg{height:32px;font-size:24px}
+.star{position:fixed;font-size:22px;animation:fly .9s linear forwards}
+@keyframes fly{0%{opacity:1;transform:translate(0,0) scale(.6)}100%{opacity:0;transform:translate(-350px,-250px) scale(1.8)}}
+button,select{font-size:18px;padding:8px 12px;border-radius:10px}
+</style></head><body><div class="sky"></div><div class="wrap"><div class="panel" id="app"></div></div>
+<script>
+const words=[
+{h:"年",p:"nián",e:"Year"},
+{h:"生日",p:"shēng rì",e:"Birthday"},
+{h:"出生",p:"chū shēng",e:"To be born"},
+{h:"今年",p:"jīn nián",e:"This year"},
+{h:"今天",p:"jīn tiān",e:"Today"},
+{h:"岁",p:"suì",e:"Years old"},
+{h:"月",p:"yuè",e:"Month / Moon"},
+{h:"日",p:"rì",e:"Day / Sun"},
+{h:"零",p:"líng",e:"Zero"},
+{h:"一",p:"yī",e:"One"},
+{h:"二",p:"èr",e:"Two"},
+{h:"三",p:"sān",e:"Three"},
+{h:"四",p:"sì",e:"Four"},
+{h:"五",p:"wǔ",e:"Five"},
+{h:"六",p:"liù",e:"Six"},
+{h:"七",p:"qī",e:"Seven"},
+{h:"八",p:"bā",e:"Eight"},
+{h:"九",p:"jiǔ",e:"Nine"},
+{h:"十",p:"shí",e:"Ten"}
+];
+let score=0,combo=0,mode="p2h",target;
+const app=document.getElementById('app');
+const sh=a=>[...a].sort(()=>Math.random()-.5);
+function particle(x,y){for(let i=0;i<12;i++){let s=document.createElement('div');s.className='star';s.textContent='⭐';s.style.left=x+'px';s.style.top=y+'px';s.style.transform=`translate(${(Math.random()-0.5)*60}px,${(Math.random()-0.5)*40}px)`;document.body.appendChild(s);setTimeout(()=>s.remove(),900);}}
+function render(){
+target=words[Math.floor(Math.random()*words.length)];
+let opts=sh(words).slice(0,4);if(!opts.includes(target))opts[0]=target;opts=sh(opts);
+app.innerHTML=`<div class=top><div>⭐ ${score}</div><div><select id=m><option value=p2h>拼音→汉字</option><option value=h2p>汉字→拼音</option><option value=e2h>English→汉字</option></select></div></div><div id=prompt>${mode=="p2h"?target.p:mode=="h2p"?target.h:target.e}</div><div id=combo>${combo>=2?"🔥 Combo x"+combo:""}</div><div id=msg></div><div id=grid></div><div id=panda>🐼🎋</div>`;
+m.value=mode;m.onchange=e=>{mode=e.target.value;render();}
+let g=document.getElementById('grid');
+opts.forEach(o=>{let d=document.createElement('div');d.className='card';
+d.innerHTML=mode=="h2p"?`<div class=p>${o.p}</div><div class=e>${o.e}</div>`:mode=="e2h"?`<div class=h>${o.h}</div><div class=p>${o.p}</div>`:`<div class=h>${o.h}</div><div class=e>${o.e}</div>`;
+d.onclick=(ev)=>{if(o===target){score+=10;combo++;d.classList.add('correct');msg.textContent="🐼 Great!";panda.textContent="🐼💨🎋";particle(ev.clientX,ev.clientY);setTimeout(()=>{panda.textContent="🐼😋";},250);setTimeout(render,700);}else{combo=0;score=Math.max(0,score-2);msg.textContent="❌ Try again";setTimeout(render,600);}};g.appendChild(d);});
+}
+render();
+</script></body></html>
