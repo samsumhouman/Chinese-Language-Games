@@ -14,6 +14,7 @@ body {
   justify-content: center;
   align-items: center;
   user-select: none;
+  overflow-x: hidden;
 }
 .sky {
   position: fixed;
@@ -132,7 +133,7 @@ body {
 }
 @keyframes fly {
   0% { opacity: 1; transform: translate(0, 0) scale(0.8); }
-  100% { opacity: 0; transform: translate(0, -100px) scale(1.6); }
+  100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(1.6); }
 }
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
@@ -208,12 +209,14 @@ function say(txt) {
 }
 
 function particle(x, y) {
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 10; i++) {
     let s = document.createElement('div');
     s.className = 'star';
     s.textContent = '⭐';
-    s.style.left = (x + (Math.random() - 0.5) * 40) + 'px';
+    s.style.left = x + 'px';
     s.style.top = y + 'px';
+    s.style.setProperty('--tx', `${(Math.random() - 0.5) * 260}px`);
+    s.style.setProperty('--ty', `${(Math.random() - 0.5) * 260}px`);
     document.body.appendChild(s);
     setTimeout(() => s.remove(), 900);
   }
@@ -309,6 +312,7 @@ function render() {
           render();
         }, 600);
       } else {
+        lock = true;
         combo = 0;
         score = Math.max(0, score - 2);
         card.classList.add('wrong');
@@ -318,6 +322,7 @@ function render() {
         setTimeout(() => {
           card.classList.remove('wrong');
           document.getElementById('panda').textContent = '🐼🎋';
+          lock = false;
         }, 500);
       }
     };
