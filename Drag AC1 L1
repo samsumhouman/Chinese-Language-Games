@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Drag Match Adventure</title><style>
+body{font-family:Arial,Microsoft YaHei;background:linear-gradient(#bfefff,#e8ffd7);margin:0}
+#app{max-width:980px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;font-size:22px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}.item,.target{background:#fff;border:2px solid #7bbf6a;border-radius:12px;padding:12px;margin:8px;font-size:24px;text-align:center}
+.item{cursor:grab}.done{background:#bff5bf}.bad{background:#ffd5d5}.over{background:#eef}
+</style></head><body><div id=app></div><script>
+const levels=[[["nǐ hǎo","你好"],["wǒ","我"],["jiào","叫"],["nǐ","你"],["shì","是"],["péng yǒu","朋友"]],[["xiǎo","小"],["tā","他"],["shén me","什么"],["míng zi","名字"],["nǐ men","你们"],["ne","呢"]],[["xìng","姓"],["tā","她"],["tā men","他们"]]];
+let lv=0,score=0,time=60,t;
+function sh(a){return [...a].sort(()=>Math.random()-.5)}
+function say(x){if(speechSynthesis){speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(x);u.lang='zh-CN';speechSynthesis.speak(u)}}
+function timer(){t=setInterval(()=>{time--;tm.textContent=time;if(time<=0)end();},1000)}
+function end(){clearInterval(t);app.innerHTML=`<h1>⏰ 游戏结束</h1><h2>得分：${score}</h2><button onclick=location.reload()>再玩一次</button>`}
+function render(){
+ if(lv>=levels.length)return end();
+ let d=levels[lv];
+ app.innerHTML=`<h1>🐼 第${lv+1}关</h1><div class=top><div>⭐ <span id=sc>${score}</span></div><div>⏰ <span id=tm>${time}</span>s</div><div>Level ${lv+1}/3</div></div><div class=cols><div id=L></div><div id=R></div></div>`;
+ sh(d).forEach((x,i)=>{let e=document.createElement('div');e.className='item';e.draggable=true;e.id='i'+i;e.dataset.m=x[1];e.textContent=x[0];e.ondragstart=v=>v.dataTransfer.setData('id',e.id);L.appendChild(e);});
+ sh(d).forEach(x=>{let z=document.createElement('div');z.className='target';z.dataset.m=x[1];z.textContent=x[1];
+ z.ondragover=e=>{e.preventDefault();z.classList.add('over')};z.ondragleave=()=>z.classList.remove('over');
+ z.ondrop=e=>{e.preventDefault();z.classList.remove('over');let it=document.getElementById(e.dataTransfer.getData('id'));
+ if(it.dataset.m===z.dataset.m){score+=10;sc.textContent=score;z.className='target done';z.textContent='✅ '+z.dataset.m;say(z.dataset.m);it.remove();if(!document.querySelector('.item')){lv++;setTimeout(render,500);}}
+ else{score=Math.max(0,score-5);sc.textContent=score;z.classList.add('bad');z.animate([{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:220});setTimeout(()=>z.classList.remove('bad'),300);}
+ };
+ R.appendChild(z);});
+ if(!t)timer();
+}
+render();
+</script></body></html>
